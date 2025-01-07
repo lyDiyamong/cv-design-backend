@@ -1,7 +1,7 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import mongoose, { Document, Types } from 'mongoose';
-import { ContentType } from 'src/types/contentType';
-import { SectionType } from 'src/types/sectionType';
+import { ContentType } from 'src/types';
+import { SectionType } from 'src/types';
 
 @Schema({ timestamps: true })
 export class Section<T extends SectionType = SectionType> extends Document {
