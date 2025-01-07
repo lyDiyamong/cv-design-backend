@@ -2,12 +2,15 @@ import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
 import { ZodValidationPipe } from 'nestjs-zod';
 import { ZodExceptionFilter } from './common/filters/zod.filter';
+import * as cookieParser from 'cookie-parser';
 
 async function bootstrap() {
   console.log('DB', process.env.DB_URI);
   const app = await NestFactory.create(AppModule);
   // Register ZodValidationPipe globally
   app.useGlobalPipes(new ZodValidationPipe());
+
+  app.use(cookieParser());
 
   // Register ZodExceptionFilter globally
   app.useGlobalFilters(new ZodExceptionFilter());
