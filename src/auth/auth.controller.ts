@@ -6,7 +6,9 @@ import {
   HttpStatus,
   Param,
   Post,
+  Req,
   Res,
+  UnauthorizedException,
 } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { ZodTransformPipe } from 'src/common/pipes/zod-transform.pipe';
@@ -17,7 +19,7 @@ import {
   signUpSchema,
 } from 'src/utils/schemas';
 import { UserService } from './user/user.service';
-import { Response } from 'express';
+import { Request, Response } from 'express';
 
 @Controller('api/auth')
 export class AuthController {
@@ -43,6 +45,12 @@ export class AuthController {
   ) {
     const result = await this.authService.login(dto, res);
     return res.status(200).json(result);
+  }
+
+  @Get('logout')
+  async logoutHandler(@Req() req: Request, @Res() res: Response) {
+    const result = await this.authService.logout(req, res);
+    return res.status(HttpStatus.ACCEPTED).json(result);
   }
 
   @Get('user/:id')

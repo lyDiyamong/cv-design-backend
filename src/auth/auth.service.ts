@@ -1,4 +1,8 @@
-import { ForbiddenException, Injectable } from '@nestjs/common';
+import {
+  ForbiddenException,
+  Injectable,
+  UnauthorizedException,
+} from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { Session } from 'src/schemas/session';
@@ -8,7 +12,7 @@ import { comparePassword } from 'src/utils/bcrypt';
 import { LoginDto, SignUpDto } from 'src/utils/schemas';
 import { TokenService } from './token/token.service';
 import { CookieStrategy } from './strategies';
-import { Response } from 'express';
+import { Request, Response } from 'express';
 
 @Injectable()
 export class AuthService {
@@ -70,5 +74,13 @@ export class AuthService {
       message: 'Login successfully',
       data: user.omitPassword(),
     };
+  }
+
+  async logout(req: Request, res: Response) {
+    const accessToken = req.cookies.accessToken as string | undefined;
+    if (!accessToken) throw new UnauthorizedException('Token expired');
+
+    this.cookieStrategy.clearCookie(res);
+    return { message: 'Log out successfully' };
   }
 }

@@ -14,8 +14,6 @@ export class CookieStrategy {
       .cookie('refreshToken', refreshToken);
   }
   clearCookie(res: Response) {
-    return res
-      .clearCookie('accessToken')
-      .clearCookie('refreshToken', { path: '/auth/refresh' });
+    return res.clearCookie('accessToken').clearCookie('refreshToken');
   }
 }
