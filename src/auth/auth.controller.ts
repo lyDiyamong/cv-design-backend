@@ -9,6 +9,7 @@ import {
   Req,
   Res,
   UnauthorizedException,
+  UseGuards,
 } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { ZodTransformPipe } from 'src/common/pipes/zod-transform.pipe';
@@ -20,6 +21,7 @@ import {
 } from 'src/utils/schemas';
 import { UserService } from './user/user.service';
 import { Request, Response } from 'express';
+import { JwtAuthGuard } from 'src/common/guards/jwt-auth.guard';
 
 @Controller('api/auth')
 export class AuthController {
@@ -52,10 +54,11 @@ export class AuthController {
     const result = await this.authService.logout(req, res);
     return res.status(HttpStatus.ACCEPTED).json(result);
   }
-
+  @UseGuards(JwtAuthGuard)
   @Get('user/:id')
   @HttpCode(HttpStatus.OK)
   async getUser(@Param('id') userId: string) {
     const result = this.userService.getUser(userId);
+    return result;
   }
 }

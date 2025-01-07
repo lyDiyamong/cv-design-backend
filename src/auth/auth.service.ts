@@ -61,9 +61,8 @@ export class AuthService {
     const passwordMatch = await comparePassword(dto.password, user.password);
     if (!passwordMatch) throw new ForbiddenException('Wrong Password');
 
+    const session = await this.sessionModel.findOne({ userId: user._id });
     const userId = user._id.toString();
-
-    const session = await this.sessionModel.findOne({ userId });
     const sessionId = session?._id?.toString();
 
     // generate token
