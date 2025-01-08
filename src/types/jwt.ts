@@ -5,11 +5,11 @@ export type AccessTokenPayload = {
 
 export type RefreshTokenPayload = Pick<AccessTokenPayload, 'sessionId'>;
 
-export type JwtUser = {
-  payload: {
-    sessionId: string;
-    // For flexibility in payload fields
-    [key: string]: any;
-  };
+export type JwtRefreshUser = {
+  payload: RefreshTokenPayload;
   refreshToken: string;
+};
+
+export type JwtUser = {
+  payload: AccessTokenPayload;
 };
