@@ -9,6 +9,8 @@ export class Resume extends Document {
   templateId: string;
   @Prop({ type: String, required: true })
   title: string;
+  @Prop({ type: String, required: true })
+  previewImg: string;
 }
 
 export const resumeSchema = SchemaFactory.createForClass(Resume);

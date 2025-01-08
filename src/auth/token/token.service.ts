@@ -37,4 +37,18 @@ export class TokenService {
       refreshToken,
     };
   }
+  // Validate the refresh token
+  async validateRefreshToken(sessionId: string, refreshToken: string) {
+    try {
+      const decoded = this.jwtService.verify(refreshToken, {
+        secret: this.configService.get('JWT_REFRESH_SECRET'),
+      });
+
+      // Ensure the token belongs to the correct user
+      return decoded.sessionId === sessionId;
+    } catch (err) {
+      // Token is invalid or expired
+      return false;
+    }
+  }
 }

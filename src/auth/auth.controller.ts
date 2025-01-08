@@ -22,6 +22,9 @@ import {
 import { UserService } from './user/user.service';
 import { Request, Response } from 'express';
 import { JwtAuthGuard } from 'src/common/guards/jwt-auth.guard';
+import { JwtStrategy } from './strategies/jwt.strategy';
+import { JwtRefreshGuard } from 'src/common/guards/jwt-refresh.guard';
+import { JwtUser } from 'src/types';
 
 @Controller('api/auth')
 export class AuthController {
@@ -60,5 +63,19 @@ export class AuthController {
   async getUser(@Param('id') userId: string) {
     const result = this.userService.getUser(userId);
     return result;
+  }
+  @UseGuards(JwtRefreshGuard)
+  @Get('refresh')
+  async refreshUserToken(@Req() req: Request, @Res() res: Response) {
+    const user = req.user as JwtUser;
+    const { payload, refreshToken } = user;
+
+    const result = await this.authService.refreshTokens(
+      payload.sessionId,
+      refreshToken,
+      res,
+    );
+
+    return res.status(HttpStatus.ACCEPTED).json(result);
   }
 }

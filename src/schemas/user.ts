@@ -1,7 +1,6 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { Document } from 'mongoose';
 import { hashPassword } from 'src/utils/bcrypt';
-// import { hashPassword } from 'src/utils/encrypt';
 
 @Schema({ timestamps: true })
 export class User extends Document {

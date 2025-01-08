@@ -11,7 +11,7 @@ import { JsonResponse } from 'src/types/jsonResponseType';
 import { comparePassword } from 'src/utils/bcrypt';
 import { LoginDto, SignUpDto } from 'src/utils/schemas';
 import { TokenService } from './token/token.service';
-import { CookieStrategy } from './strategies';
+import { CookieStrategy, JwtRefreshStrategy } from './strategies';
 import { Request, Response } from 'express';
 
 @Injectable()
@@ -21,6 +21,7 @@ export class AuthService {
     @InjectModel(Session.name) private readonly sessionModel: Model<Session>,
     private tokenService: TokenService,
     private cookieStrategy: CookieStrategy,
+    private readonly jwtRefreshStrategy: JwtRefreshStrategy,
   ) {}
 
   async signUp(dto: SignUpDto, res: Response) {
@@ -81,5 +82,35 @@ export class AuthService {
 
     this.cookieStrategy.clearCookie(res);
     return { message: 'Log out successfully' };
+  }
+
+  async refreshTokens(sessionId: string, refreshToken: string, res: Response) {
+    // Verify if the refresh token is valid and hasn't been tampered with
+    const isRefreshTokenValid = await this.tokenService.validateRefreshToken(
+      sessionId,
+      refreshToken,
+    );
+
+    if (!isRefreshTokenValid) {
+      throw new ForbiddenException('Invalid or expired refresh token');
+    }
+
+    const session = await this.sessionModel.findById(sessionId);
+
+    const userId = session.userId.toString();
+
+    // Generate new access and refresh tokens
+    const newTokens = await this.tokenService.generateTokens(userId, sessionId);
+
+    // Set the new tokens in cookies
+    this.cookieStrategy.setCookies({
+      res,
+      accessToken: newTokens.accessToken,
+      refreshToken: newTokens.refreshToken,
+    });
+
+    return {
+      message: 'Tokens refreshed successfully',
+    };
   }
 }
