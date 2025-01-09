@@ -19,7 +19,10 @@ export const signUpSchema = loginSchema
     gender: z.enum(['Male', 'Female']),
     imgUrl: z.string().optional(),
     confirmPassword: z.string(),
-    dateOfBirth: z.date(),
+    dateOfBirth: z.coerce.date({
+      required_error: 'Please select a date and time',
+      invalid_type_error: "That's not a valid date!",
+    }),
   })
   .refine((data) => data.password === data.confirmPassword, {
     message: 'Passwords do not match',
