@@ -19,6 +19,9 @@ export class User extends Document {
     required: true,
   })
   password: string;
+  @Prop({ type: Date, required: true })
+  dateOfBirth: Date;
+
   omitPassword(): Pick<
     User,
     'firstName' | 'lastName' | 'email' | 'gender' | 'imgUrl' | '_id'

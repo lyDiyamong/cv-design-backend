@@ -70,17 +70,6 @@ export class AuthController {
       .status(HttpStatus.ACCEPTED)
       .json({ message: 'Log out successfully' });
   }
-
-  @Get('user/:userId')
-  // @UseGuards(UserRestrictGuard)
-  @HttpCode(HttpStatus.OK)
-  async getUser(
-    @GetUser('userId') user: string,
-    @Param('userId') userId: string,
-  ) {
-    const result = this.userService.getUser(userId);
-    return result;
-  }
   @UseGuards(JwtRefreshGuard)
   @Get('refresh')
   async refreshUserToken(@Req() req: Request, @Res() res: Response) {

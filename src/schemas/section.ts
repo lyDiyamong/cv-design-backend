@@ -30,6 +30,7 @@ export const sectionSchema = SchemaFactory.createForClass(Section);
 
 // Personal sub-schema
 @Schema({ _id: false })
+// Obj
 export class PersonalContent {
   @Prop({ required: true })
   firstName: string;
@@ -50,6 +51,7 @@ export const personalContentSchema =
   SchemaFactory.createForClass(PersonalContent);
 
 // Contact sub-schema
+// Obj
 @Schema({ _id: false })
 export class ContactContent {
   @Prop({ required: true })
@@ -67,6 +69,7 @@ export const contactContentSchema =
 
 // Skill sub-schema
 @Schema({ _id: false })
+// Array
 export class SkillContent {
   @Prop({ required: true })
   name: string;
@@ -82,6 +85,7 @@ export const skillContentSchema = SchemaFactory.createForClass(SkillContent);
 
 // Experience sub-schema
 @Schema({ _id: false })
+// Array
 export class ExperienceContent {
   @Prop({ required: true })
   jobTitle: string;
@@ -101,6 +105,7 @@ export const experienceContentSchema =
 
 // Education sub-schema
 @Schema({ _id: false })
+// Array
 export class EducationContent {
   @Prop({ required: true })
   school: string;
@@ -120,6 +125,7 @@ export const educationContentSchema =
 
 // Language sub-schema
 @Schema({ _id: false })
+// Array
 export class LanguageContent {
   @Prop({ required: true })
   language: string;
@@ -136,6 +142,7 @@ export const languageContentSchema =
 
 // Reference sub-schema
 @Schema({ _id: false })
+// Array
 export class ReferenceContent {
   @Prop({ required: true })
   firstName: string;

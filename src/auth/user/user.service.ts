@@ -2,6 +2,7 @@ import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { User } from 'src/schemas/user';
+import { UpdateUserDto } from 'src/utils/schemas';
 
 @Injectable()
 export class UserService {
@@ -14,6 +15,23 @@ export class UserService {
 
     if (!user) throw new HttpException('User not found', HttpStatus.NOT_FOUND);
 
-    return { data: user, message: 'User found' };
+    return user.omitPassword();
   }
+
+  async updateUser(userId: string, input: UpdateUserDto) {
+    const updatedUser = await this.userModel.findByIdAndUpdate(
+      userId,
+      // Only update the fields in the `input` object
+      { $set: input },
+      { new: true, runValidators: true },
+    );
+
+    if (!updatedUser) {
+      throw new HttpException('User not found', HttpStatus.NOT_FOUND);
+    }
+
+    return updatedUser.omitPassword();
+  }
+
+  async updateUserProfile(userid: string, input: )
 }
