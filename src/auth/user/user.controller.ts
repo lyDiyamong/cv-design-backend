@@ -5,16 +5,22 @@ import {
   HttpCode,
   HttpStatus,
   Patch,
-  Put,
+  UploadedFile,
+  UseInterceptors,
 } from '@nestjs/common';
 import { UserService } from './user.service';
 import { GetUser } from '../decorators/get-user.decorator';
 import { ZodTransformPipe } from 'src/common/pipes/zod-transform.pipe';
 import { updateUser, UpdateUserDto } from 'src/utils/schemas';
+import { FileInterceptor } from '@nestjs/platform-express';
+import { S3Service } from 'src/s3/s3.service';
 
 @Controller('user')
 export class UserController {
-  constructor(private readonly userService: UserService) {}
+  constructor(
+    private readonly userService: UserService,
+    private readonly s3Service: S3Service,
+  ) {}
 
   @Get('profile')
   @HttpCode(HttpStatus.OK)
@@ -23,6 +29,7 @@ export class UserController {
     return { message: 'User found', data: result };
   }
   @Patch('profile')
+  @HttpCode(HttpStatus.OK)
   async updateUser(
     @GetUser('userId') userId: string,
     @Body(new ZodTransformPipe(updateUser)) input: UpdateUserDto,
@@ -30,5 +37,22 @@ export class UserController {
     const result = await this.userService.updateUser(userId, input);
 
     return { message: 'Update successfully', data: result };
+  }
+
+  @Patch('profile-image')
+  // "file" is the field name from the form
+  @UseInterceptors(FileInterceptor('file'))
+  @HttpCode(HttpStatus.OK)
+  async updateUserProfile(
+    @GetUser('userId') userId: string,
+    @UploadedFile() file: Express.Multer.File,
+  ) {
+    const imageUrl = await this.s3Service.uploadFile(file, 'user-profile');
+
+    const result = await this.userService.updateUserProfile(userId, imageUrl);
+    return {
+      message: 'Profile upload successfully',
+      data: result,
+    };
   }
 }

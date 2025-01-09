@@ -1,8 +1,17 @@
-import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
+import {
+  HttpException,
+  HttpStatus,
+  Injectable,
+  Patch,
+  UploadedFile,
+  UseInterceptors,
+} from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { User } from 'src/schemas/user';
 import { UpdateUserDto } from 'src/utils/schemas';
+import { S3Service } from '../../s3/s3.service';
+import { FileInterceptor } from '@nestjs/platform-express';
 
 @Injectable()
 export class UserService {
@@ -27,11 +36,24 @@ export class UserService {
     );
 
     if (!updatedUser) {
-      throw new HttpException('User not found', HttpStatus.NOT_FOUND);
+      throw new HttpException('Updated profile failed', HttpStatus.NOT_FOUND);
     }
 
     return updatedUser.omitPassword();
   }
 
-  async updateUserProfile(userid: string, input: )
+  async updateUserProfile(userId: string, imageUrl: string) {
+    const user = await this.userModel.findById(userId);
+
+    if (!user)
+      throw new HttpException(
+        'Update profile image failed',
+        HttpStatus.BAD_REQUEST,
+      );
+
+    user.imageUrl = imageUrl;
+    await user.save();
+
+    return user.omitPassword();
+  }
 }
