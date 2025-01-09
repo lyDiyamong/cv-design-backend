@@ -13,7 +13,7 @@ export class User extends Document {
   @Prop({ enum: ['Male', 'Female'], required: true })
   gender: string;
   @Prop({ type: String })
-  imgUrl?: string;
+  imageUrl?: string;
   @Prop({
     type: String,
     required: true,
@@ -24,7 +24,7 @@ export class User extends Document {
 
   omitPassword(): Pick<
     User,
-    'firstName' | 'lastName' | 'email' | 'gender' | 'imgUrl' | '_id'
+    'firstName' | 'lastName' | 'email' | 'gender' | 'imageUrl' | '_id'
   > {
     // Placeholder, as implementation is added to the schema
     throw new Error('Method not implemented.');

@@ -7,6 +7,8 @@ import { MongooseModule } from '@nestjs/mongoose';
 import { configDotenv } from 'dotenv';
 import { APP_GUARD } from '@nestjs/core';
 import { JwtAuthGuard } from './common/guards/jwt-auth.guard';
+import { S3Module } from './s3/s3.module';
+import { ConfigModule } from '@nestjs/config';
 
 configDotenv();
 @Module({
@@ -27,6 +29,10 @@ configDotenv();
     }),
     AuthModule,
     CoreModule,
+    S3Module,
+    ConfigModule.forRoot({
+      isGlobal: true,
+    }),
   ],
   controllers: [AppController],
   providers: [AppService, { provide: APP_GUARD, useClass: JwtAuthGuard }],

@@ -35,6 +35,7 @@ export class AuthService {
       lastName: dto.lastName,
       password: dto.password,
       gender: dto.gender,
+      dateOfBirth: dto.dateOfBirth,
     });
 
     const sessionCreated = await this.sessionModel.create({
@@ -103,7 +104,7 @@ export class AuthService {
 
     const session = await this.sessionModel.findById(payload.sessionId);
 
-    const userId = session.userId.toString();
+    const userId = session?.userId?.toString();
 
     // Generate new access and refresh tokens
     const newTokens = await this.tokenService.generateTokens(

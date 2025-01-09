@@ -13,6 +13,7 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
 // Strategy
 import { JwtStrategy, JwtRefreshStrategy, CookieStrategy } from './strategies';
 import { TokenService } from './token/token.service';
+import { S3Module } from 'src/s3/s3.module';
 
 @Module({
   controllers: [AuthController],
@@ -39,6 +40,7 @@ import { TokenService } from './token/token.service';
         },
       }),
     }),
+    S3Module,
   ],
 })
 export class AuthModule {}

@@ -4,11 +4,9 @@ import {
   Get,
   HttpCode,
   HttpStatus,
-  Param,
   Post,
   Req,
   Res,
-  UnauthorizedException,
   UseGuards,
 } from '@nestjs/common';
 import { AuthService } from './auth.service';
@@ -24,7 +22,6 @@ import { Request, Response } from 'express';
 import { JwtRefreshGuard } from 'src/common/guards/jwt-refresh.guard';
 import { JwtRefreshUser } from 'src/types';
 import { Public } from './decorators/public.decorator';
-import { GetUser } from './decorators/get-user.decorator';
 
 @Controller('auth')
 export class AuthController {
@@ -70,6 +67,7 @@ export class AuthController {
       .status(HttpStatus.ACCEPTED)
       .json({ message: 'Log out successfully' });
   }
+  @Public()
   @UseGuards(JwtRefreshGuard)
   @Get('refresh')
   async refreshUserToken(@Req() req: Request, @Res() res: Response) {
