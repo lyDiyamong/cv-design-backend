@@ -47,8 +47,16 @@ export class UserController {
     @GetUser('userId') userId: string,
     @UploadedFile() file: Express.Multer.File,
   ) {
-    const imageUrl = await this.s3Service.uploadFile(file, 'user-profile');
+    // Find user image field if it's empty
+    const user = await this.userService.getUser(userId);
+    console.log('image user', user.imageUrl);
+    if (user.imageUrl) {
+      await this.s3Service.deleteFile(user.imageUrl);
+    }
 
+    // Upload new image
+    const imageUrl = await this.s3Service.uploadFile(file, 'user-profile');
+    // Update imageUrl field
     const result = await this.userService.updateUserProfile(userId, imageUrl);
     return {
       message: 'Profile upload successfully',

@@ -9,6 +9,7 @@ import {
 import { v4 as uuidv4 } from 'uuid';
 import { Readable } from 'stream';
 import { ConfigService } from '@nestjs/config';
+import { extractS3Key } from 'src/utils/extractS3Key';
 
 @Injectable()
 export class S3Service {
@@ -76,7 +77,9 @@ export class S3Service {
   }
 
   // Method to delete a file from S3
-  async deleteFile(key: string): Promise<void> {
+  async deleteFile(s3Url: string): Promise<void> {
+    const key = extractS3Key(s3Url, this.s3BucketName);
+
     const deleteParams = {
       Bucket: this.s3BucketName,
       Key: key,

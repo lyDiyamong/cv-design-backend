@@ -30,6 +30,7 @@ export class AuthController {
     private readonly userService: UserService,
   ) {}
 
+  @Public()
   @Post('sign-up')
   @HttpCode(HttpStatus.CREATED)
   async signUp(
