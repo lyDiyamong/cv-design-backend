@@ -7,12 +7,12 @@ import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { Session } from 'src/schemas/session';
 import { User } from 'src/schemas/user';
-import { JsonResponse } from 'src/types/jsonResponseType';
 import { comparePassword } from 'src/utils/bcrypt';
 import { LoginDto, SignUpDto } from 'src/utils/schemas';
 import { TokenService } from './token/token.service';
 import { CookieStrategy, JwtRefreshStrategy } from './strategies';
-import { Request, Response } from 'express';
+import { RefreshTokenPayload, AccessTokenPayload } from 'src/types';
+import { ConfigService } from '@nestjs/config';
 
 @Injectable()
 export class AuthService {
@@ -20,11 +20,11 @@ export class AuthService {
     @InjectModel(User.name) private readonly userModel: Model<User>,
     @InjectModel(Session.name) private readonly sessionModel: Model<Session>,
     private tokenService: TokenService,
-    private cookieStrategy: CookieStrategy,
+    private configService: ConfigService,
     private readonly jwtRefreshStrategy: JwtRefreshStrategy,
   ) {}
 
-  async signUp(dto: SignUpDto, res: Response) {
+  async signUp(dto: SignUpDto) {
     const userExist = await this.userModel.exists({ email: dto.email });
 
     if (userExist) throw new ForbiddenException('User already existed');
@@ -48,14 +48,14 @@ export class AuthService {
     // generate token
     const { accessToken, refreshToken } =
       await this.tokenService.generateTokens(userId, sessionId);
-    this.cookieStrategy.setCookies({ res, accessToken, refreshToken });
+
     return {
-      message: 'Sign up successfully',
-      data: userCreated.omitPassword(),
+      accessToken,
+      refreshToken,
     };
   }
 
-  async login(dto: LoginDto, res: Response) {
+  async login(dto: LoginDto) {
     const user = await this.userModel.findOne({ email: dto.email });
     if (!user) throw new ForbiddenException('Access denied');
 
@@ -69,48 +69,51 @@ export class AuthService {
     // generate token
     const { accessToken, refreshToken } =
       await this.tokenService.generateTokens(userId, sessionId);
-    this.cookieStrategy.setCookies({ res, accessToken, refreshToken });
+
     return {
-      message: 'Login successfully',
-      data: user.omitPassword(),
+      accessToken,
+      refreshToken,
     };
   }
 
-  async logout(req: Request, res: Response) {
-    const accessToken = req.cookies.accessToken as string | undefined;
+  async logout(accessToken: string): Promise<void> {
     if (!accessToken) throw new UnauthorizedException('Token expired');
 
-    this.cookieStrategy.clearCookie(res);
-    return { message: 'Log out successfully' };
+    const { payload, error } = await this.tokenService.validateToken(
+      accessToken,
+      {
+        secret: this.configService.get('JWT_ACCESS_SECRET'),
+      },
+    );
+    if (error) throw new UnauthorizedException('Session expired');
+
+    await this.sessionModel.findByIdAndDelete(payload.sessionId);
   }
 
-  async refreshTokens(sessionId: string, refreshToken: string, res: Response) {
+  async refreshTokens(refreshToken: string) {
     // Verify if the refresh token is valid and hasn't been tampered with
-    const isRefreshTokenValid = await this.tokenService.validateRefreshToken(
-      sessionId,
-      refreshToken,
-    );
+    const { payload, error } =
+      await this.tokenService.validateToken<RefreshTokenPayload>(refreshToken, {
+        secret: this.configService.get('JWT_REFRESH_SECRET'),
+      });
 
-    if (!isRefreshTokenValid) {
+    if (error) {
       throw new ForbiddenException('Invalid or expired refresh token');
     }
 
-    const session = await this.sessionModel.findById(sessionId);
+    const session = await this.sessionModel.findById(payload.sessionId);
 
     const userId = session.userId.toString();
 
     // Generate new access and refresh tokens
-    const newTokens = await this.tokenService.generateTokens(userId, sessionId);
-
-    // Set the new tokens in cookies
-    this.cookieStrategy.setCookies({
-      res,
-      accessToken: newTokens.accessToken,
-      refreshToken: newTokens.refreshToken,
-    });
+    const newTokens = await this.tokenService.generateTokens(
+      userId,
+      payload.sessionId,
+    );
 
     return {
-      message: 'Tokens refreshed successfully',
+      newAccessToken: newTokens.accessToken,
+      newRefreshToken: newTokens.refreshToken,
     };
   }
 }

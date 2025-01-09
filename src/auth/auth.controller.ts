@@ -21,15 +21,12 @@ import {
 } from 'src/utils/schemas';
 import { UserService } from './user/user.service';
 import { Request, Response } from 'express';
-import { JwtAuthGuard } from 'src/common/guards/jwt-auth.guard';
-import { JwtStrategy } from './strategies/jwt.strategy';
 import { JwtRefreshGuard } from 'src/common/guards/jwt-refresh.guard';
 import { JwtRefreshUser } from 'src/types';
-import { UserRestrictGuard } from 'src/common/guards/user-restrict.guard';
 import { Public } from './decorators/public.decorator';
 import { GetUser } from './decorators/get-user.decorator';
 
-@Controller('api/auth')
+@Controller('auth')
 export class AuthController {
   constructor(
     private readonly authService: AuthService,
@@ -42,27 +39,39 @@ export class AuthController {
     @Body(new ZodTransformPipe(signUpSchema)) dto: SignUpDto,
     @Res() res: Response,
   ) {
-    const result = await this.authService.signUp(dto, res);
-    return result;
+    const { accessToken, refreshToken } = await this.authService.signUp(dto);
+
+    res.cookie('accessToken', accessToken).cookie('refreshToken', refreshToken);
+
+    return res.status(HttpStatus.CREATED).json({
+      message: 'Sign up successfully',
+    });
   }
   @Public()
   @Post('login')
-  //   @HttpCode(HttpStatus.ACCEPTED)
   async login(
     @Body(new ZodTransformPipe(loginSchema)) dto: LoginDto,
     @Res() res: Response,
   ) {
-    const result = await this.authService.login(dto, res);
-    return res.status(HttpStatus.ACCEPTED).json(result);
+    const { accessToken, refreshToken } = await this.authService.login(dto);
+    res.cookie('accessToken', accessToken).cookie('refreshToken', refreshToken);
+    return res
+      .status(HttpStatus.ACCEPTED)
+      .json({ message: 'Log in successfully' });
   }
 
   @Get('logout')
   async logoutHandler(@Req() req: Request, @Res() res: Response) {
-    const result = await this.authService.logout(req, res);
-    return res.status(HttpStatus.ACCEPTED).json(result);
-  }
-  @Get('user/:userId')
+    const accessToken = req.cookies.accessToken as string | undefined;
+    await this.authService.logout(accessToken);
 
+    res.clearCookie('accessToken').clearCookie('refreshToken');
+    return res
+      .status(HttpStatus.ACCEPTED)
+      .json({ message: 'Log out successfully' });
+  }
+
+  @Get('user/:userId')
   // @UseGuards(UserRestrictGuard)
   @HttpCode(HttpStatus.OK)
   async getUser(
@@ -76,15 +85,17 @@ export class AuthController {
   @Get('refresh')
   async refreshUserToken(@Req() req: Request, @Res() res: Response) {
     const user = req.user as JwtRefreshUser;
-    console.log(user);
     const { payload, refreshToken } = user;
 
-    const result = await this.authService.refreshTokens(
-      payload.sessionId,
-      refreshToken,
-      res,
-    );
+    const { newAccessToken, newRefreshToken } =
+      await this.authService.refreshTokens(refreshToken);
 
-    return res.status(HttpStatus.ACCEPTED).json(result);
+    res
+      .cookie('accessToken', newAccessToken)
+      .cookie('refreshToken', newRefreshToken);
+
+    return res
+      .status(HttpStatus.ACCEPTED)
+      .json({ message: 'Token refresh successfully' });
   }
 }
