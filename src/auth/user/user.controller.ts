@@ -14,6 +14,7 @@ import { ZodTransformPipe } from 'src/common/pipes/zod-transform.pipe';
 import { updateUser, UpdateUserDto } from 'src/utils/schemas';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { S3Service } from 'src/s3/s3.service';
+import { ZodFileValidationPipe } from 'src/common/pipes/zod-file.pipe';
 
 @Controller('user')
 export class UserController {
@@ -45,7 +46,7 @@ export class UserController {
   @HttpCode(HttpStatus.OK)
   async updateUserProfile(
     @GetUser('userId') userId: string,
-    @UploadedFile() file: Express.Multer.File,
+    @UploadedFile(ZodFileValidationPipe) file: Express.Multer.File,
   ) {
     // Find user image field if it's empty
     const user = await this.userService.getUser(userId);

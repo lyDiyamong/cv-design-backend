@@ -1,4 +1,7 @@
 import { Module } from '@nestjs/common';
+import { ResumeModule } from './resume/resume.module';
 
-@Module({})
+@Module({
+  imports: [ResumeModule],
+})
 export class CoreModule {}
