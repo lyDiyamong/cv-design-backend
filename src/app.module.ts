@@ -9,6 +9,7 @@ import { APP_GUARD } from '@nestjs/core';
 import { JwtAuthGuard } from './common/guards/jwt-auth.guard';
 import { S3Module } from './s3/s3.module';
 import { ConfigModule } from '@nestjs/config';
+import { HttpModule } from '@nestjs/axios';
 
 configDotenv();
 @Module({
@@ -33,6 +34,7 @@ configDotenv();
     ConfigModule.forRoot({
       isGlobal: true,
     }),
+    HttpModule,
   ],
   controllers: [AppController],
   providers: [AppService, { provide: APP_GUARD, useClass: JwtAuthGuard }],

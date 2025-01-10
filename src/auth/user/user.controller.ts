@@ -49,7 +49,6 @@ export class UserController {
   ) {
     // Find user image field if it's empty
     const user = await this.userService.getUser(userId);
-    console.log('image user', user.imageUrl);
     if (user.imageUrl) {
       await this.s3Service.deleteFile(user.imageUrl);
     }

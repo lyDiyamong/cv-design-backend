@@ -13,6 +13,7 @@ import { TokenService } from './token/token.service';
 import { CookieStrategy, JwtRefreshStrategy } from './strategies';
 import { RefreshTokenPayload, AccessTokenPayload } from 'src/types';
 import { ConfigService } from '@nestjs/config';
+import { JsonWebTokenError, TokenExpiredError } from '@nestjs/jwt';
 
 @Injectable()
 export class AuthService {
@@ -63,7 +64,10 @@ export class AuthService {
     const passwordMatch = await comparePassword(dto.password, user.password);
     if (!passwordMatch) throw new ForbiddenException('Wrong Password');
 
-    const session = await this.sessionModel.findOne({ userId: user._id });
+    const session = await this.sessionModel.create({
+      userAgent: dto.userAgent,
+      userId: user._id,
+    });
     const userId = user._id.toString();
     const sessionId = session?._id?.toString();
 
@@ -78,7 +82,7 @@ export class AuthService {
   }
 
   async logout(accessToken: string): Promise<void> {
-    if (!accessToken) throw new UnauthorizedException('Token expired');
+    if (!accessToken) throw new JsonWebTokenError('Token expired');
 
     const { payload, error } = await this.tokenService.validateToken(
       accessToken,

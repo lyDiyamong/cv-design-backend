@@ -5,7 +5,6 @@ import { ZodExceptionFilter } from './common/filters/zod.filter';
 import * as cookieParser from 'cookie-parser';
 
 async function bootstrap() {
-  console.log('DB', process.env.DB_URI);
   const app = await NestFactory.create(AppModule);
   app.setGlobalPrefix('/api/v1');
   // Register ZodValidationPipe globally

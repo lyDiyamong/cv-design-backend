@@ -63,7 +63,7 @@ export class AuthController {
     const accessToken = req.cookies.accessToken as string | undefined;
     await this.authService.logout(accessToken);
 
-    res.clearCookie('accessToken').clearCookie('refreshToken');
+    res.clearCookie('accessToken');
     return res
       .status(HttpStatus.ACCEPTED)
       .json({ message: 'Log out successfully' });
