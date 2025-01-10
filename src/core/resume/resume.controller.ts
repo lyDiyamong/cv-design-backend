@@ -52,7 +52,7 @@ export class ResumeController {
       userId,
       previewImg,
     );
-    return { message: 'Create Resume successfully', data: result };
+    return { message: 'Created Resume successfully', data: result };
   }
 
   @Get()
@@ -93,11 +93,14 @@ export class ResumeController {
       dto,
       previewImg,
     );
-    return { message: 'Update resume successfully', data: result };
+    return { message: 'Updated resume successfully', data: result };
   }
 
   @Delete(':id')
-  async remove(@Param('id') id: string) {
-    return this.resumeService.remove(id);
+  @HttpCode(HttpStatus.ACCEPTED)
+  async remove(@Param('id') id: string, @GetUser('userId') userId: string) {
+    this.resumeService.deleteResume(id, userId);
+
+    return { message: 'Deleted successfully' };
   }
 }

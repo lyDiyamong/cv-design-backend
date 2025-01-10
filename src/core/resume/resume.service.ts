@@ -54,7 +54,13 @@ export class ResumeService {
     return updatedResume;
   }
 
-  remove(id: string) {
-    return `This action removes a #${id} resume`;
+  async deleteResume(id: string, userId: string) {
+    const deletedResume = await this.resumeModel.findOneAndDelete({
+      _id: id,
+      userId,
+    });
+
+    if (!deletedResume)
+      throw new HttpException('Resume not found', HttpStatus.NOT_FOUND);
   }
 }
