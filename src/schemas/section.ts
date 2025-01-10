@@ -1,7 +1,6 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import mongoose, { Document, Types } from 'mongoose';
-import { ContentType } from 'src/types';
-import { SectionType } from 'src/types';
+import { ContentType, SectionType } from 'src/types';
 
 @Schema({ timestamps: true })
 export class Section<T extends SectionType = SectionType> extends Document {
@@ -25,6 +24,13 @@ export class Section<T extends SectionType = SectionType> extends Document {
 }
 
 export const sectionSchema = SchemaFactory.createForClass(Section);
+sectionSchema.index({ resumeId: 1, type: 1 }, { unique: true });
+
+// Create the model
+// const SectionModel = mongoose.model('Section', sectionSchema);
+
+// Ensure indexes are synced (typically during app initialization)
+// SectionModel.ensureIndexes();
 
 // Discriminators Schema
 
@@ -38,13 +44,13 @@ export class PersonalContent {
   @Prop({ required: true })
   lastName: string;
 
-  @Prop({ required: true })
+  @Prop()
   imgUrl: string;
 
   @Prop({ required: true })
   position: string;
 
-  @Prop({ required: true })
+  @Prop()
   summary: string;
 }
 export const personalContentSchema =
@@ -54,13 +60,13 @@ export const personalContentSchema =
 // Obj
 @Schema({ _id: false })
 export class ContactContent {
-  @Prop({ required: true })
+  @Prop()
   phone: string;
 
   @Prop({ required: true })
   email: string;
 
-  @Prop({ required: true })
+  @Prop()
   address: string;
 }
 
@@ -90,13 +96,13 @@ export class ExperienceContent {
   @Prop({ required: true })
   jobTitle: string;
 
-  @Prop({ required: true })
-  position: string;
+  @Prop({ type: [String] })
+  responsibilities: string;
 
-  @Prop({ required: true })
+  @Prop({ type: Date, required: true })
   startDate: Date;
 
-  @Prop({ required: true })
+  @Prop({ type: Date, required: true })
   endDate: Date;
 }
 
@@ -113,10 +119,10 @@ export class EducationContent {
   @Prop({ required: true })
   degreeMajor: string;
 
-  @Prop({ required: true })
+  @Prop({ type: Date, required: true })
   startDate: Date;
 
-  @Prop({ required: true })
+  @Prop({ type: Date, required: true })
   endDate: Date;
 }
 
@@ -166,8 +172,8 @@ export const referenceContentSchema =
 // Add Discriminators for each type of section
 sectionSchema.discriminator('personal', personalContentSchema);
 sectionSchema.discriminator('contact', contactContentSchema);
-sectionSchema.discriminator('skills', skillContentSchema);
-sectionSchema.discriminator('experiences', experienceContentSchema);
-sectionSchema.discriminator('educations', educationContentSchema);
-sectionSchema.discriminator('languages', languageContentSchema);
-sectionSchema.discriminator('references', referenceContentSchema);
+sectionSchema.discriminator('skills', { type: [skillContentSchema] });
+sectionSchema.discriminator('experiences', { type: [experienceContentSchema] });
+sectionSchema.discriminator('educations', { type: [educationContentSchema] });
+sectionSchema.discriminator('languages', { type: [languageContentSchema] });
+sectionSchema.discriminator('references', { type: [referenceContentSchema] });
