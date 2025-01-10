@@ -1,3 +1,4 @@
+// Nestjs
 import {
   Controller,
   Get,
@@ -11,12 +12,19 @@ import {
   UseInterceptors,
   UploadedFile,
 } from '@nestjs/common';
+import { FileInterceptor } from '@nestjs/platform-express';
 import { ResumeService } from './resume.service';
-import { CreateResumeDto, createResumeSchema, UpdateResumeDto } from './dto';
+// Dto
+import {
+  CreateResumeDto,
+  createResumeSchema,
+  UpdateResumeDto,
+  updateResumeSchema,
+} from './dto';
 import { GetUser } from 'src/auth/decorators/get-user.decorator';
 import { S3Service } from 'src/s3/s3.service';
+// Pipe
 import { ZodTransformPipe } from 'src/common/pipes/zod-transform.pipe';
-import { FileInterceptor } from '@nestjs/platform-express';
 import { ZodFileValidationPipe } from 'src/common/pipes/zod-file.pipe';
 
 @Controller('resume')
@@ -30,45 +38,66 @@ export class ResumeController {
   @UseInterceptors(FileInterceptor('previewImg-file'))
   async create(
     @Body(new ZodTransformPipe(createResumeSchema))
-    createResumeDto: CreateResumeDto,
+    dto: CreateResumeDto,
     @UploadedFile(ZodFileValidationPipe)
     previewImgFile: Express.Multer.File,
     @GetUser('userId') userId: string,
   ) {
     const previewImg = await this.s3Service.uploadFile(
       previewImgFile,
-      'resume-preview/',
+      'resume-preview',
     );
-    const resume = await this.resumeService.createResume(
-      createResumeDto,
+    const result = await this.resumeService.createResume(
+      dto,
       userId,
       previewImg,
     );
-    return;
+    return { message: 'Create Resume successfully', data: result };
   }
 
   @Get()
   @HttpCode(HttpStatus.OK)
-  findAll(@GetUser('userId') userId: string) {
-    return this.resumeService.findUserResume(userId);
+  async findAll(@GetUser('userId') userId: string) {
+    const result = await this.resumeService.findUserResume(userId);
+
+    return { message: 'Found', data: result };
   }
 
   @Get(':id')
-  findOne(@Param('id') id: string, @GetUser('userId') userId: string) {
-    return this.resumeService.findOneResume(id, userId);
+  async findOne(@Param('id') id: string, @GetUser('userId') userId: string) {
+    const result = await this.resumeService.findOneResume(id, userId);
+    return { message: 'Found', data: result };
   }
 
   @Patch(':id')
-  update(
+  @UseInterceptors(FileInterceptor('previewImg-file'))
+  async update(
     @Param('id') id: string,
     @GetUser('userId') userId: string,
-    @Body() updateResumeDto: UpdateResumeDto,
+    @Body(new ZodTransformPipe(updateResumeSchema)) dto: UpdateResumeDto,
+    @UploadedFile(ZodFileValidationPipe) previewImgFile: Express.Multer.File,
   ) {
-    return this.resumeService.updateResume(id, userId, updateResumeDto);
+    const resume = await this.resumeService.findOneResume(id, userId);
+
+    if (resume && resume.previewImg) {
+      await this.s3Service.deleteFile(resume.previewImg);
+    }
+
+    const previewImg = await this.s3Service.uploadFile(
+      previewImgFile,
+      'resume-preview',
+    );
+    const result = await this.resumeService.updateResume(
+      id,
+      userId,
+      dto,
+      previewImg,
+    );
+    return { message: 'Update resume successfully', data: result };
   }
 
   @Delete(':id')
-  remove(@Param('id') id: string) {
+  async remove(@Param('id') id: string) {
     return this.resumeService.remove(id);
   }
 }

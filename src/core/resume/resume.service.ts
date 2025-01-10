@@ -32,8 +32,26 @@ export class ResumeService {
     return userResume;
   }
 
-  updateResume(id: string, userId: string, updateResumeDto: UpdateResumeDto) {
-    return `This action updates a #${id} resume`;
+  async updateResume(
+    id: string,
+    userId: string,
+    dto: UpdateResumeDto,
+    previewImg: string,
+  ) {
+    const updatedResume = await this.resumeModel.findOneAndUpdate(
+      { userId, _id: id },
+      {
+        $set: {
+          userId,
+          templateId: dto.templateId,
+          title: dto.title,
+          previewImg,
+        },
+      },
+      { new: true },
+    );
+
+    return updatedResume;
   }
 
   remove(id: string) {
