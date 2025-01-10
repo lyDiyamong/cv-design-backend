@@ -1,42 +1,35 @@
-import {
-  Controller,
-  Get,
-  Post,
-  Body,
-  Patch,
-  Param,
-  Delete,
-} from '@nestjs/common';
+import { Body, Controller, Post, BadRequestException } from '@nestjs/common';
 import { SectionService } from './section.service';
-import { CreateSectionDto } from './dto/create-section.dto';
-import { UpdateSectionDto } from './dto/update-section.dto';
+import { SectionSchemas, CreateSectionSchema } from './dto/create-section.dto';
 
 @Controller('section')
 export class SectionController {
   constructor(private readonly sectionService: SectionService) {}
 
   @Post()
-  create(@Body() createSectionDto: CreateSectionDto) {
-    return this.sectionService.create(createSectionDto);
-  }
+  async createSection(@Body() body: any) {
+    // Validate base structure
+    const parsedBody = CreateSectionSchema.safeParse(body);
 
-  @Get()
-  findAll() {
-    return this.sectionService.findAll();
-  }
+    if (!parsedBody.success) {
+      throw new BadRequestException(parsedBody.error.errors);
+    }
 
-  @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.sectionService.findOne(id);
-  }
+    const { type, content, resumeId } = parsedBody.data;
 
-  @Patch(':id')
-  update(@Param('id') id: string, @Body() updateSectionDto: UpdateSectionDto) {
-    return this.sectionService.update(id, updateSectionDto);
-  }
+    // Validate `content` dynamically based on `type`
+    const contentSchema = SectionSchemas[type];
+    const contentValidation = contentSchema.safeParse(content);
 
-  @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.sectionService.remove(id);
+    if (!contentValidation.success) {
+      throw new BadRequestException(contentValidation.error.errors);
+    }
+
+    // If validation passes, call the service
+    return this.sectionService.createSection(
+      type,
+      contentValidation.data,
+      resumeId,
+    );
   }
 }
