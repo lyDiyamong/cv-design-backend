@@ -12,5 +12,6 @@ import { S3Module } from 'src/s3/s3.module';
     MongooseModule.forFeature([{ name: Resume.name, schema: resumeSchema }]),
     S3Module,
   ],
+  exports: [MongooseModule, ResumeService],
 })
 export class ResumeModule {}
