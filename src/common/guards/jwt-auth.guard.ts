@@ -35,7 +35,6 @@ export class JwtAuthGuard extends AuthGuard('jwt') {
       // Attempt to validate the access token
       return (await super.canActivate(context)) as boolean;
     } catch (err) {
-      console.log(err.name);
       // If the token is expired, attempt to refresh
       if (err.name === 'JsonWebTokenError') {
         const refreshed = await this.handleTokenRefresh(request, response);
@@ -65,7 +64,6 @@ export class JwtAuthGuard extends AuthGuard('jwt') {
           },
         }),
       );
-      console.log('data', result);
       const { newAccessToken, newRefreshToken } = result.data;
 
       // Update cookies or headers with the new tokens
