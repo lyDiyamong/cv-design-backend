@@ -8,9 +8,12 @@ import {
   Patch,
 } from '@nestjs/common';
 import { SectionService } from './section.service';
-import { SectionSchemas, createSectionSchema } from './dto/create-section.dto';
 import { ResumeService } from '../resume/resume.service';
 import { GetUser } from 'src/auth/decorators/get-user.decorator';
+import {
+  updateSectionSchema,
+  updateSectionSchemasTypes,
+} from './dto/update-section.dto';
 
 @Controller('section')
 export class SectionController {
@@ -22,7 +25,7 @@ export class SectionController {
   @Patch('edit')
   async createSection(@Body() body: any, @GetUser('userId') userId: string) {
     // Validate the base structure
-    const parsedBody = createSectionSchema.safeParse(body);
+    const parsedBody = updateSectionSchema.safeParse(body);
 
     if (!parsedBody.success) {
       throw new BadRequestException(parsedBody.error.errors);
@@ -44,7 +47,7 @@ export class SectionController {
         const { type, content } = section;
 
         // Validate `content` dynamically based on `type`
-        const contentSchema = SectionSchemas[type];
+        const contentSchema = updateSectionSchemasTypes[type];
         const contentValidation = contentSchema.safeParse(content);
 
         if (!contentValidation.success) {

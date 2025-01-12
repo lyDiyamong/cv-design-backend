@@ -107,7 +107,7 @@ const updateReferenceContentSchema = z.array(
 );
 
 // Map updated schemas to types
-export const updateSectionSchemas = {
+export const updateSectionSchemasTypes = {
   personal: updatePersonalContentSchema,
   contact: updateContactContentSchema,
   skills: updateSkillContentSchema,
@@ -117,19 +117,21 @@ export const updateSectionSchemas = {
   references: updateReferenceContentSchema,
 };
 
+// Ensure the keys are treated as a tuple of string literals
+const sectionKeys = Object.keys(updateSectionSchemasTypes) as [
+  'personal',
+  'contact',
+  'skills',
+  'experiences',
+  'educations',
+  'languages',
+  'references',
+];
 // Define updateSectionSchema
-export const updateSectionSchema = z.object({
-  resumeId: z.string().min(1, 'Resume ID is required'),
-  type: z.enum(
-    Object.keys(updateSectionSchemas) as [
-      'personal',
-      'contact',
-      'skills',
-      'experiences',
-      'educations',
-      'languages',
-      'references',
-    ],
-  ),
-  content: z.unknown(),
-});
+export const updateSectionSchema = z.array(
+  z.object({
+    resumeId: z.string().min(1, 'Resume ID is required'),
+    type: z.enum(sectionKeys),
+    content: z.unknown(),
+  }),
+);
