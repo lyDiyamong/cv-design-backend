@@ -1,35 +1,68 @@
-import { Body, Controller, Post, BadRequestException } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Post,
+  BadRequestException,
+  HttpException,
+  HttpStatus,
+  Patch,
+} from '@nestjs/common';
 import { SectionService } from './section.service';
-import { SectionSchemas, CreateSectionSchema } from './dto/create-section.dto';
+import { SectionSchemas, createSectionSchema } from './dto/create-section.dto';
+import { ResumeService } from '../resume/resume.service';
+import { GetUser } from 'src/auth/decorators/get-user.decorator';
 
 @Controller('section')
 export class SectionController {
-  constructor(private readonly sectionService: SectionService) {}
+  constructor(
+    private readonly sectionService: SectionService,
+    private readonly resumeService: ResumeService,
+  ) {}
 
-  @Post()
-  async createSection(@Body() body: any) {
-    // Validate base structure
-    const parsedBody = CreateSectionSchema.safeParse(body);
+  @Patch('edit')
+  async createSection(@Body() body: any, @GetUser('userId') userId: string) {
+    // Validate the base structure
+    const parsedBody = createSectionSchema.safeParse(body);
 
     if (!parsedBody.success) {
       throw new BadRequestException(parsedBody.error.errors);
     }
 
-    const { type, content, resumeId } = parsedBody.data;
+    const sections = parsedBody.data;
 
-    // Validate `content` dynamically based on `type`
-    const contentSchema = SectionSchemas[type];
-    const contentValidation = contentSchema.safeParse(content);
+    // Each section has the same resume
+    const { resumeId } = sections[0];
+    const resume = await this.resumeService.findOneResume(resumeId, userId);
 
-    if (!contentValidation.success) {
-      throw new BadRequestException(contentValidation.error.errors);
+    if (!resume) {
+      throw new HttpException('Resume not found', HttpStatus.NOT_FOUND);
     }
 
-    // If validation passes, call the service
-    return this.sectionService.createSection(
-      type,
-      contentValidation.data,
-      resumeId,
+    // Validate and process each section
+    const results = await Promise.all(
+      sections.map(async (section) => {
+        const { type, content } = section;
+
+        // Validate `content` dynamically based on `type`
+        const contentSchema = SectionSchemas[type];
+        const contentValidation = contentSchema.safeParse(content);
+
+        if (!contentValidation.success) {
+          throw new BadRequestException(contentValidation.error.errors);
+        }
+
+        // Call the service to handle creation or updates for the section
+        return this.sectionService.createOrUpdateSection(
+          type,
+          contentValidation.data,
+          resumeId,
+        );
+      }),
     );
+
+    return {
+      message: 'Sections successfully processed',
+      results,
+    };
   }
 }

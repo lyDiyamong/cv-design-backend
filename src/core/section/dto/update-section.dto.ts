@@ -1,4 +1,135 @@
-// import { PartialType } from '@nestjs/mapped-types';
-// import { CreateSectionDto } from './create-section.dto';
+import { z } from 'zod';
 
-// export class UpdateSectionDto extends PartialType(CreateSectionDto) {}
+// update schemas with optional fields
+const updatePersonalContentSchema = z.object({
+  firstName: z
+    .string()
+    .min(1, 'First name is required')
+    .max(50, 'Max character is 50')
+    .optional(),
+  lastName: z
+    .string()
+    .min(1, 'Last name is required')
+    .max(50, 'Max character is 50')
+    .optional(),
+  position: z.string().max(100, 'Max character is 100').optional(),
+  summary: z.string().max(450, 'Max character is 450').optional(),
+});
+
+const updateContactContentSchema = z.object({
+  phone: z.string().optional(),
+  email: z.string().email('Invalid email address').optional(),
+  address: z.string().optional(),
+});
+
+const updateSkillContentSchema = z.array(
+  z.object({
+    name: z.string().min(1, 'Skill name is required').optional(),
+    level: z.enum(['Expert', 'Advance', 'Intermediate', 'Beginner']).optional(),
+  }),
+);
+
+const updateExperienceContentSchema = z.array(
+  z
+    .object({
+      jobTitle: z.string().max(100, 'Max character is 100').optional(),
+      responsibilities: z
+        .array(z.string().max(250, 'Max character is 250').optional())
+        .optional(),
+      startDate: z.coerce
+        .date({
+          required_error: 'Please select a start date',
+          invalid_type_error: "That's not a valid date!",
+        })
+        .optional(),
+      endDate: z.coerce
+        .date({
+          required_error: 'Please select an end date',
+          invalid_type_error: "That's not a valid date!",
+        })
+        .optional(),
+    })
+    .superRefine((data, ctx) => {
+      if (data.startDate && data.endDate && data.endDate <= data.startDate) {
+        ctx.addIssue({
+          code: 'custom',
+          path: ['endDate'],
+          message: 'End date must be later than start date',
+        });
+      }
+    }),
+);
+
+const updateEducationContentSchema = z.array(
+  z
+    .object({
+      school: z.string().min(1, 'School name is required').optional(),
+      degreeMajor: z.string().min(1, 'Degree or Major is required').optional(),
+      startDate: z.coerce
+        .date({
+          required_error: 'Please select a start date',
+          invalid_type_error: "That's not a valid date!",
+        })
+        .optional(),
+      endDate: z.coerce
+        .date({
+          required_error: 'Please select an end date',
+          invalid_type_error: "That's not a valid date!",
+        })
+        .optional(),
+    })
+    .superRefine((data, ctx) => {
+      if (data.startDate && data.endDate && data.endDate <= data.startDate) {
+        ctx.addIssue({
+          code: 'custom',
+          path: ['endDate'],
+          message: 'End date must be later than start date',
+        });
+      }
+    }),
+);
+
+const updateLanguageContentSchema = z.array(
+  z.object({
+    language: z.string().optional(),
+    level: z.enum(['Fluent', 'Advance', 'Intermediate', 'Beginner']).optional(),
+  }),
+);
+
+const updateReferenceContentSchema = z.array(
+  z.object({
+    firstName: z.string().optional(),
+    lastName: z.string().optional(),
+    email: z.string().optional(),
+    company: z.string().optional(),
+    position: z.string().optional(),
+  }),
+);
+
+// Map updated schemas to types
+export const updateSectionSchemas = {
+  personal: updatePersonalContentSchema,
+  contact: updateContactContentSchema,
+  skills: updateSkillContentSchema,
+  experiences: updateExperienceContentSchema,
+  educations: updateEducationContentSchema,
+  languages: updateLanguageContentSchema,
+  references: updateReferenceContentSchema,
+};
+
+// Define updateSectionSchema
+export const updateSectionSchema = z.object({
+  resumeId: z.string().min(1, 'Resume ID is required'),
+  type: z.enum(
+    Object.keys(updateSectionSchemas) as [
+      'personal',
+      'contact',
+      'skills',
+      'experiences',
+      'educations',
+      'languages',
+      'references',
+    ],
+  ),
+  content: z.unknown(),
+});
