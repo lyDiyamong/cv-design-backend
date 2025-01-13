@@ -11,7 +11,7 @@ import {
 import { UserService } from './user.service';
 import { GetUser } from '../decorators/get-user.decorator';
 import { ZodTransformPipe } from 'src/common/pipes/zod-transform.pipe';
-import { updateUser, UpdateUserDto } from 'src/utils/schemas';
+import { updateUserSchema, UpdateUserDto } from './dto/update-user.dto';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { S3Service } from 'src/s3/s3.service';
 import { ZodFileValidationPipe } from 'src/common/pipes/zod-file.pipe';
@@ -33,7 +33,7 @@ export class UserController {
   @HttpCode(HttpStatus.OK)
   async updateUser(
     @GetUser('userId') userId: string,
-    @Body(new ZodTransformPipe(updateUser)) input: UpdateUserDto,
+    @Body(new ZodTransformPipe(updateUserSchema)) input: UpdateUserDto,
   ) {
     const result = await this.userService.updateUser(userId, input);
 

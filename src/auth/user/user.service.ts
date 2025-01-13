@@ -1,17 +1,8 @@
-import {
-  HttpException,
-  HttpStatus,
-  Injectable,
-  Patch,
-  UploadedFile,
-  UseInterceptors,
-} from '@nestjs/common';
+import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { User } from 'src/schemas/user';
 import { UpdateUserDto } from 'src/utils/schemas';
-import { S3Service } from '../../s3/s3.service';
-import { FileInterceptor } from '@nestjs/platform-express';
 
 @Injectable()
 export class UserService {
