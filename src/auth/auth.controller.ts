@@ -11,17 +11,13 @@ import {
 } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { ZodTransformPipe } from 'src/common/pipes/zod-transform.pipe';
-import {
-  LoginDto,
-  loginSchema,
-  SignUpDto,
-  signUpSchema,
-} from 'src/utils/schemas';
-import { UserService } from './user/user.service';
+
 import { Request, Response } from 'express';
 import { JwtRefreshGuard } from 'src/common/guards/jwt-refresh.guard';
 import { JwtRefreshUser } from 'src/types';
 import { Public } from './decorators/public.decorator';
+import { SignUpDto, signUpSchema } from './dto/signup.dto';
+import { LoginDto, loginSchema } from './dto/login.dto';
 
 @Controller('auth')
 export class AuthController {
