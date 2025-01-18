@@ -6,6 +6,9 @@ import {
   HttpException,
   HttpStatus,
   Patch,
+  HttpCode,
+  Param,
+  Get,
 } from '@nestjs/common';
 import { SectionService } from './section.service';
 import { ResumeService } from '../resume/resume.service';
@@ -22,8 +25,12 @@ export class SectionController {
     private readonly resumeService: ResumeService,
   ) {}
 
-  @Patch('edit')
-  async createSection(@Body() body: any, @GetUser('userId') userId: string) {
+  @Patch('edit/:resumeId')
+  async createSection(
+    @Body() body: any,
+    @Param('resumeId') resumeId: string,
+    @GetUser('userId') userId: string,
+  ) {
     // Validate the base structure
     const parsedBody = updateSectionSchema.safeParse(body);
 
@@ -34,7 +41,6 @@ export class SectionController {
     const sections = parsedBody.data;
 
     // Each section has the same resume
-    const { resumeId } = sections[0];
     const resume = await this.resumeService.findOneResume(resumeId, userId);
 
     if (!resume) {
@@ -67,5 +73,12 @@ export class SectionController {
       message: 'Sections successfully processed',
       results,
     };
+  }
+  @Get(':resumeId')
+  @HttpCode(HttpStatus.OK)
+  async getSectionByResumeId(@Param('resumeId') resumeId: string) {
+    console.log('resumeid', resumeId);
+    const result = await this.sectionService.getSectionByResumeId(resumeId);
+    return { message: 'Sections found', data: result };
   }
 }

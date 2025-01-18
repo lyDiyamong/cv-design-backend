@@ -130,7 +130,6 @@ const sectionKeys = Object.keys(updateSectionSchemasTypes) as [
 // Define updateSectionSchema
 export const updateSectionSchema = z.array(
   z.object({
-    resumeId: z.string().min(1, 'Resume ID is required'),
     type: z.enum(sectionKeys),
     content: z.unknown(),
   }),

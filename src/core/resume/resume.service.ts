@@ -3,20 +3,43 @@ import { InjectModel } from '@nestjs/mongoose';
 import { Resume } from 'src/schemas/resume';
 import { Model } from 'mongoose';
 import { CreateResumeDto, UpdateResumeDto } from './dto';
+import { Section } from 'src/schemas/section';
 
 @Injectable()
 export class ResumeService {
   constructor(
     @InjectModel(Resume.name) private readonly resumeModel: Model<Resume>,
+    @InjectModel(Section.name)
+    private readonly sectionModel: Model<Section>,
   ) {}
-  async createResume(dto: CreateResumeDto, userId: string, previewImg: string) {
-    const { templateId, title } = dto;
+  async createResume(dto: CreateResumeDto, userId: string) {
+    const { templateId, title, previewImg } = dto;
     const createdResume = await this.resumeModel.create({
       userId,
       templateId,
       title,
       previewImg,
     });
+
+    // Create default sections for the resume
+    const sectionTypes = [
+      'personal',
+      'contact',
+      'skills',
+      'experiences',
+      'educations',
+      'languages',
+      'references',
+    ];
+
+    const defaultSections = sectionTypes.map((type) => ({
+      type,
+      resumeId: createdResume._id,
+      content: {},
+    }));
+
+    await this.sectionModel.insertMany(defaultSections);
+
     return createdResume;
   }
 

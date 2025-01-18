@@ -1,4 +1,4 @@
-import { Module } from '@nestjs/common';
+import { Module, forwardRef } from '@nestjs/common';
 import { SectionService } from './section.service';
 import { SectionController } from './section.controller';
 import { MongooseModule } from '@nestjs/mongoose';
@@ -11,7 +11,7 @@ import { S3Module } from 'src/s3/s3.module';
   providers: [SectionService],
   imports: [
     MongooseModule.forFeature([{ name: Section.name, schema: sectionSchema }]),
-    ResumeModule,
+    forwardRef(() => ResumeModule), // Use forwardRef for ResumeModule
     S3Module,
   ],
   exports: [MongooseModule, SectionService],

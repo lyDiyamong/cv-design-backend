@@ -26,6 +26,10 @@ export class UserController {
   @Get('profile')
   @HttpCode(HttpStatus.OK)
   async getUser(@GetUser('userId') userId: string) {
+    if (!userId) {
+      return { message: 'User not found' };
+    }
+
     const result = await this.userService.getUser(userId);
     return { message: 'User found', data: result };
   }

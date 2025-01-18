@@ -26,35 +26,33 @@ import { S3Service } from 'src/s3/s3.service';
 // Pipe
 import { ZodTransformPipe } from 'src/common/pipes/zod-transform.pipe';
 import { ZodFileValidationPipe } from 'src/common/pipes/zod-file.pipe';
+import { SectionService } from '../section/section.service';
 
 @Controller('resume')
 export class ResumeController {
   constructor(
     private readonly resumeService: ResumeService,
     private readonly s3Service: S3Service,
+    private readonly sectionService: SectionService,
   ) {}
 
   @Post()
-  @UseInterceptors(FileInterceptor('previewImg-file'))
+  // @UseInterceptors(FileInterceptor('previewImg-file'))
   async create(
     @Body(new ZodTransformPipe(createResumeSchema))
     dto: CreateResumeDto,
-    @UploadedFile(ZodFileValidationPipe)
-    previewImgFile: Express.Multer.File,
+    // @UploadedFile(ZodFileValidationPipe)
+    // previewImgFile: Express.Multer.File,
     @GetUser('userId') userId: string,
   ) {
-    const previewImg = await this.s3Service.uploadFile(
-      previewImgFile,
-      'resume-preview',
-    );
-    const result = await this.resumeService.createResume(
-      dto,
-      userId,
-      previewImg,
-    );
+    // const previewImg = await this.s3Service.uploadFile(
+    //   previewImgFile,
+    //   'resume-preview',
+    // );
+    const result = await this.resumeService.createResume(dto, userId);
+
     return { message: 'Created Resume successfully', data: result };
   }
-
   @Get()
   @HttpCode(HttpStatus.OK)
   async findAll(@GetUser('userId') userId: string) {

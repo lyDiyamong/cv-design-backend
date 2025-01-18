@@ -28,6 +28,13 @@ export class TemplateController {
 
     return result;
   }
+  @Get()
+  @HttpCode(HttpStatus.OK)
+  async getAll() {
+    const result = await this.templateService.getAllTemplates();
+    return { message: 'Found', data: result };
+  }
+
   @Get('/:id')
   @HttpCode(HttpStatus.OK)
   async getOne(@Param('id') id: string) {

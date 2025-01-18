@@ -13,6 +13,11 @@ async function bootstrap() {
 
   app.use(cookieParser());
 
+  app.enableCors({
+    origin: process.env.FRONTEND_URL,
+    credentials: true,
+  });
+
   // Register ZodExceptionFilter globally
   app.useGlobalFilters(new ZodExceptionFilter(), new MongoExceptionFilter());
   await app.listen(process.env.PORT ?? 3000, () => {

@@ -18,6 +18,7 @@ import { JwtRefreshUser } from 'src/types';
 import { Public } from './decorators/public.decorator';
 import { SignUpDto, signUpSchema } from './dto/signup.dto';
 import { LoginDto, loginSchema } from './dto/login.dto';
+import { access } from 'fs';
 
 @Controller('auth')
 export class AuthController {
@@ -36,6 +37,10 @@ export class AuthController {
 
     return res.status(HttpStatus.CREATED).json({
       message: 'Sign up successfully',
+      data: {
+        accessToken,
+        refreshToken,
+      },
     });
   }
   @Public()
@@ -46,9 +51,13 @@ export class AuthController {
   ) {
     const { accessToken, refreshToken } = await this.authService.login(dto);
     res.cookie('accessToken', accessToken).cookie('refreshToken', refreshToken);
-    return res
-      .status(HttpStatus.ACCEPTED)
-      .json({ message: 'Log in successfully' });
+    return res.status(HttpStatus.ACCEPTED).json({
+      message: 'Log in successfully',
+      data: {
+        accessToken,
+        refreshToken,
+      },
+    });
   }
 
   @Get('logout')
@@ -75,8 +84,9 @@ export class AuthController {
       .cookie('accessToken', newAccessToken)
       .cookie('refreshToken', newRefreshToken);
 
-    return res
-      .status(HttpStatus.ACCEPTED)
-      .json({ message: 'Token refresh successfully' });
+    return res.status(HttpStatus.ACCEPTED).json({
+      message: 'Token refresh successfully',
+      data: { accessToken: newAccessToken, refreshToken: newRefreshToken },
+    });
   }
 }
