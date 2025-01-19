@@ -13,10 +13,9 @@ export class ResumeService {
     private readonly sectionModel: Model<Section>,
   ) {}
   async createResume(dto: CreateResumeDto, userId: string) {
-    const { templateId, title, previewImg } = dto;
+    const { title, previewImg } = dto;
     const createdResume = await this.resumeModel.create({
       userId,
-      templateId,
       title,
       previewImg,
     });
@@ -32,11 +31,54 @@ export class ResumeService {
       'references',
     ];
 
-    const defaultSections = sectionTypes.map((type) => ({
-      type,
-      resumeId: createdResume._id,
-      content: {},
-    }));
+    const defaultSections = sectionTypes.map((type) => {
+      let content = {}; // Default to an empty object
+
+      switch (type) {
+        case 'personal':
+          content = { firstName: '', lastName: '' };
+          break;
+        case 'contact':
+          content = { phoneNumber: '', email: '', address: '' };
+          break;
+        case 'skills':
+          content = [{ name: '', level: '' }]; // Skills content should likely be an array
+          break;
+        case 'experiences':
+          content = [
+            { jobTitle: '', position: '', startDate: '', endDate: '' },
+          ];
+          break;
+        case 'educations':
+          content = [
+            { schoolName: '', degreeMajor: '', startDate: '', endDate: '' },
+          ];
+          break;
+        case 'languages':
+          content = [{ language: '', level: '' }];
+          break;
+        case 'references':
+          content = [
+            {
+              firstName: '',
+              lastName: '',
+              position: '',
+              company: '',
+              email: '',
+              phoneNumber: '',
+            },
+          ];
+          break;
+        default:
+          content = {}; // Default to empty object for unknown section types
+      }
+
+      return {
+        type,
+        resumeId: createdResume._id,
+        content,
+      };
+    });
 
     await this.sectionModel.insertMany(defaultSections);
 

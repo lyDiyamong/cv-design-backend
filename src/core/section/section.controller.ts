@@ -110,6 +110,6 @@ export class SectionController {
       type,
       content,
     );
-    return { message: 'Update section success', data: result };
+    return { message: 'Update Resume success', data: result };
   }
 }

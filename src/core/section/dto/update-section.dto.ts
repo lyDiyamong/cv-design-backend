@@ -24,7 +24,7 @@ const updateContactContentSchema = z.object({
 
 const updateSkillContentSchema = z.array(
   z.object({
-    name: z.string().min(1, 'Skill name is required').optional(),
+    skill: z.string().min(1, 'Skill name is required').optional(),
     level: z.enum(['Expert', 'Advance', 'Intermediate', 'Beginner']).optional(),
   }),
 );
