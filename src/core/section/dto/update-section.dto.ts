@@ -33,9 +33,8 @@ const updateExperienceContentSchema = z.array(
   z
     .object({
       jobTitle: z.string().max(100, 'Max character is 100').optional(),
-      responsibilities: z
-        .array(z.string().max(250, 'Max character is 250').optional())
-        .optional(),
+      company: z.string().max(100, 'Max character is 100').optional(),
+      responsibility: z.string().max(250, 'Max character is 250').optional(),
       startDate: z.coerce
         .date({
           required_error: 'Please select a start date',
@@ -134,3 +133,11 @@ export const updateSectionSchema = z.array(
     content: z.unknown(),
   }),
 );
+
+// Define updateSectionSchema
+export const updateEachSectionSchema = z.object({
+  type: z.enum(sectionKeys),
+  content: z.unknown(),
+});
+
+export type UpdateEachSectionType = z.infer<typeof updateEachSectionSchema>;

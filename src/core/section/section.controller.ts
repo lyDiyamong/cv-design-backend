@@ -14,6 +14,7 @@ import { SectionService } from './section.service';
 import { ResumeService } from '../resume/resume.service';
 import { GetUser } from 'src/auth/decorators/get-user.decorator';
 import {
+  updateEachSectionSchema,
   updateSectionSchema,
   updateSectionSchemasTypes,
 } from './dto/update-section.dto';
@@ -74,11 +75,41 @@ export class SectionController {
       results,
     };
   }
-  @Get(':resumeId')
+  @Get('resume/:resumeId')
   @HttpCode(HttpStatus.OK)
   async getSectionByResumeId(@Param('resumeId') resumeId: string) {
-    console.log('resumeid', resumeId);
     const result = await this.sectionService.getSectionByResumeId(resumeId);
     return { message: 'Sections found', data: result };
+  }
+
+  @Patch('edit/resume/:resumeId')
+  @HttpCode(HttpStatus.ACCEPTED)
+  async updateEachSection(
+    @Param('resumeId') resumeId: string,
+    @Body() body: any,
+    @GetUser('userId') userId: string,
+  ) {
+    // Validate the base structure
+    const parsedBody = updateEachSectionSchema.safeParse(body);
+    if (!parsedBody.success) {
+      throw new BadRequestException(parsedBody.error.errors);
+    }
+
+    const section = parsedBody.data;
+
+    const { type, content } = section;
+
+    const resume = await this.resumeService.findOneResume(resumeId, userId);
+
+    if (!resume) {
+      throw new HttpException('Resume not found', HttpStatus.NOT_FOUND);
+    }
+
+    const result = await this.sectionService.editSectionByType(
+      resumeId,
+      type,
+      content,
+    );
+    return { message: 'Update section success', data: result };
   }
 }

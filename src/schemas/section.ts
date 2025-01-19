@@ -96,8 +96,11 @@ export class ExperienceContent {
   @Prop({ required: true })
   jobTitle: string;
 
-  @Prop({ type: [String] })
-  responsibilities: string;
+  @Prop()
+  company: string;
+
+  @Prop({ type: String })
+  responsibility: string;
 
   @Prop({ type: Date, required: true })
   startDate: Date;

@@ -6,8 +6,9 @@ import {
 } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
-import { Section } from '../../schemas/section';
+import { Section, sectionSchema } from '../../schemas/section';
 import mongoose from 'mongoose';
+import { UpdateEachSectionType } from './dto/update-section.dto';
 
 @Injectable()
 export class SectionService {
@@ -58,8 +59,6 @@ export class SectionService {
       return updatedContent;
     }
 
-    console.log('Section contetn', existingSection);
-
     // Create a new section
     const newSection = new this.sectionModel({
       type,
@@ -68,5 +67,34 @@ export class SectionService {
     });
 
     return newSection.save();
+  }
+
+  async editSectionByType(
+    resumeId: string,
+    type: UpdateEachSectionType['type'],
+    content: UpdateEachSectionType['content'],
+  ) {
+    const objectIdResumeId = new mongoose.Types.ObjectId(resumeId);
+    // Check if the section already exists
+    const existingSection = await this.sectionModel.exists({
+      type,
+      resumeId: objectIdResumeId,
+    });
+
+    if (!existingSection)
+      throw new HttpException(
+        'Section with this resumeId and type not exist',
+        HttpStatus.NOT_FOUND,
+      );
+
+    // Update the existing section
+    const updatedContent = await this.sectionModel.findOneAndUpdate(
+      { type, resumeId: objectIdResumeId },
+      { $set: { content } },
+      {
+        new: true,
+      },
+    );
+    return updatedContent;
   }
 }
