@@ -12,7 +12,6 @@ export class UserService {
 
   async getUser(userId: string) {
     const user = await this.userModel.findOne({ _id: userId });
-    console.log('User id ', userId);
 
     if (!user) throw new HttpException('User not found', HttpStatus.NOT_FOUND);
 

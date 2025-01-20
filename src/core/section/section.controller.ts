@@ -9,6 +9,8 @@ import {
   HttpCode,
   Param,
   Get,
+  UseInterceptors,
+  UploadedFile,
 } from '@nestjs/common';
 import { SectionService } from './section.service';
 import { ResumeService } from '../resume/resume.service';
@@ -18,12 +20,16 @@ import {
   updateSectionSchema,
   updateSectionSchemasTypes,
 } from './dto/update-section.dto';
+import { FileInterceptor } from '@nestjs/platform-express';
+import { ZodFileValidationPipe } from 'src/common/pipes/zod-file.pipe';
+import { S3Service } from 'src/s3/s3.service';
 
 @Controller('section')
 export class SectionController {
   constructor(
     private readonly sectionService: SectionService,
     private readonly resumeService: ResumeService,
+    private readonly s3Service: S3Service,
   ) {}
 
   @Patch('edit/:resumeId')
@@ -111,5 +117,25 @@ export class SectionController {
       content,
     );
     return { message: 'Update Resume success', data: result };
+  }
+
+  @Patch('resume-profile/:resumeId')
+  @UseInterceptors(FileInterceptor('resume-profile'))
+  @HttpCode(HttpStatus.OK)
+  async updateUserProfile(
+    @Param('resumeId') resumeId: string,
+    @UploadedFile(ZodFileValidationPipe) file: Express.Multer.File,
+  ) {
+    // Upload new image
+    const imageUrl = await this.s3Service.uploadFile(file, 'resume-profile');
+    // Update imageUrl field
+    const result = await this.sectionService.updatePersonalProfile(
+      resumeId,
+      imageUrl,
+    );
+    return {
+      message: 'Resume profile upload successfully',
+      data: result,
+    };
   }
 }

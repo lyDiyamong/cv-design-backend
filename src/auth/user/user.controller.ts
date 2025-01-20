@@ -1,6 +1,7 @@
 import {
   Body,
   Controller,
+  Delete,
   Get,
   HttpCode,
   HttpStatus,
@@ -64,6 +65,25 @@ export class UserController {
     const result = await this.userService.updateUserProfile(userId, imageUrl);
     return {
       message: 'Profile upload successfully',
+      data: result,
+    };
+  }
+  @Delete('profile-image')
+  // "file" is the field name from the form
+  @HttpCode(HttpStatus.OK)
+  async deleteUserProfile(@GetUser('userId') userId: string) {
+    // Find user image field if it's empty
+    const user = await this.userService.getUser(userId);
+    if (user.imageUrl) {
+      await this.s3Service.deleteFile(user.imageUrl);
+    }
+
+    // Upload new image
+    const imageUrl = null;
+    // Update imageUrl field
+    const result = await this.userService.updateUserProfile(userId, imageUrl);
+    return {
+      message: 'Delete profile successfully',
       data: result,
     };
   }

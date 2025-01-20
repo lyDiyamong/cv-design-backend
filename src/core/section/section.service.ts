@@ -30,8 +30,6 @@ export class SectionService {
       );
     }
 
-    console.log('section', sections);
-
     return sections;
   }
 
@@ -95,6 +93,26 @@ export class SectionService {
         new: true,
       },
     );
+    return updatedContent;
+  }
+  async updatePersonalProfile(resumeId: string, imgUrl: string) {
+    const objectIdResumeId = new mongoose.Types.ObjectId(resumeId);
+
+    // Update the existing section
+    const updatedContent = await this.sectionModel.findOneAndUpdate(
+      { type: 'personal', resumeId: objectIdResumeId },
+      { $set: { 'content.imgUrl': imgUrl } },
+      {
+        new: true,
+      },
+    );
+
+    if (!updatedContent)
+      throw new HttpException(
+        'Section with this resumeId and type not exist',
+        HttpStatus.NOT_FOUND,
+      );
+
     return updatedContent;
   }
 }

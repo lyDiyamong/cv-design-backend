@@ -14,7 +14,7 @@ async function bootstrap() {
   app.use(cookieParser());
 
   app.enableCors({
-    origin: process.env.FRONTEND_URL,
+    origin: ['https://cv-design-frontend.vercel.app', 'http://localhost:3000'], // Add both hosted frontend and local frontend
     credentials: true,
   });
 

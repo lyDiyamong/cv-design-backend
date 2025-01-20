@@ -33,7 +33,7 @@ sectionSchema.pre('save', function (next) {
     personal: ['firstName', 'lastName'],
     contact: ['phoneNumber', 'email', 'address'],
     skills: ['name', 'level'],
-    experiences: ['jobTitle', 'position', 'startDate', 'endDate'],
+    experiences: ['jobTitle', 'company', 'startDate', 'endDate'],
     education: ['schoolName', 'degreeMajor', 'startDate', 'endDate'],
     languages: ['language', 'level'],
     reference: [
