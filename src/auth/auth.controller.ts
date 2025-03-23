@@ -77,16 +77,16 @@ export class AuthController {
     const user = req.user as JwtRefreshUser;
     const { payload, refreshToken } = user;
 
-    const { newAccessToken, newRefreshToken } =
+    const { newAccessToken } =
       await this.authService.refreshTokens(refreshToken);
 
     res
-      .cookie('accessToken', newAccessToken)
-      .cookie('refreshToken', newRefreshToken);
+      .cookie('accessToken', newAccessToken);
+      // .cookie('refreshToken', newRefreshToken);
 
     return res.status(HttpStatus.ACCEPTED).json({
       message: 'Token refresh successfully',
-      data: { accessToken: newAccessToken, refreshToken: newRefreshToken },
+      data: { accessToken: newAccessToken },
     });
   }
 }

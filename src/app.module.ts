@@ -14,7 +14,7 @@ import { HttpModule } from '@nestjs/axios';
 configDotenv();
 @Module({
   imports: [
-    MongooseModule.forRoot(process.env.DB_URI_CLOUD, {
+    MongooseModule.forRoot(process.env.DB_URI, {
       connectionFactory: (connection) => {
         const logger = new Logger('Mongoose');
 
