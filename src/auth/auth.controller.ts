@@ -75,6 +75,8 @@ export class AuthController {
   @Get('refresh')
   async refreshUserToken(@Req() req: Request, @Res() res: Response) {
     const user = req.user as JwtRefreshUser;
+
+    console.log("user ", user);
     const { payload, refreshToken } = user;
 
     const { newAccessToken } =

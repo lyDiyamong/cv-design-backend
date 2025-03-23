@@ -12,7 +12,7 @@ export class TokenService {
 
   private accessTokenOptions = {
     secret: this.configService.get('JWT_ACCESS_SECRET'),
-    expiresIn: '3m',
+    expiresIn: '5s',
   };
   private refreshTokenOptions = {
     secret: this.configService.get('JWT_REFRESH_SECRET'),
